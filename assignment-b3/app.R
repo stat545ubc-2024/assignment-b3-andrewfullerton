@@ -20,6 +20,9 @@ ui <- fluidPage(
       # toggle between artist/song (requires custom CSS)
       checkboxInput("switchInput", "Show Artist", value = TRUE),
       
+      # select songs and/or artists you want to view in plot 
+      # default option: all
+      
       # select ranking criteria
       radioButtons("rankInput", "Rank by:",
                    choices = c("Weeks on Chart", "Peak Position", "Overall Popularity"),
@@ -28,7 +31,7 @@ ui <- fluidPage(
     mainPanel("results will go here once I do more stuff")
   )
   
-  # Your favourite song(s) over the years interactive plot
+  # Top songs by year (interactive table)
   
   # Download as CSV
 )
