@@ -1,42 +1,55 @@
 library(shiny)
+library(DT)
 library(tidyverse)
 
-# Set up our data
-xmas_billboard <- read_csv("data/christmas_billboard_data.csv")
+source("/Users/andrewfullerton/Desktop/Code/assignment-b3-andrewfullerton/data/preprocessing.R")
 
-xmas_billboard <- xmas_billboard |>
-  mutate(weekid = mdy(weekid)) # @AF TO DO: aggregate by year (i.e. by Christmas season)
-
-# Building the app
+# Building the UI
 ui <- fluidPage(
-  titlePanel("Christmas Tunes: Billboard Top 100", "100 Christmas Tunes"),
+  titlePanel("Christmas Tunes: Billboard Top 100", "Top Christmas Tunes"),
   
   # Popularity by year interactive plot
   sidebarLayout(
     sidebarPanel(
+      h3("Plot Settings"),
+      
+      # select songs and/or artists you want to view in plot
+      selectInput("songInput", 
+                  "Choose Song(s):",
+                  choices = c("All Songs", xmas_billboard$song),
+                  selected = "All Songs", # default: all songs
+                  multiple = TRUE),
+      
       # select year range you want to view for
-      sliderInput("yearInput", "Year", 1958, 2017, c(1958, 2017), sep = ""),
-      
-      # toggle between artist/song (requires custom CSS)
-      checkboxInput("switchInput", "Show Artist", value = TRUE),
-      
-      # select songs and/or artists you want to view in plot 
-      # default option: all
+      sliderInput("yearInput", 
+                  "Select Year Range:", 
+                  min = 1958, 
+                  max = 2017, 
+                  c(1958, 2017), 
+                  sep = ""),
       
       # select ranking criteria
-      radioButtons("rankInput", "Rank by:",
-                   choices = c("Weeks on Chart", "Peak Position", "Overall Popularity"),
+      radioButtons("rankInput", 
+                   "Rank by:",
+                   choices = c("Overall Popularity", "Weeks on Chart", "Peak Position"),
                    selected = "Overall Popularity")
+      
+      # download button (CSV)
     ),
-    mainPanel("results will go here once I do more stuff")
+    mainPanel(
+      tabsetPanel(
+        # Plot tab
+        tabPanel("Interactive Plot",
+                 h3("Song Popularity Plot"),
+                 plotOutput("popularityPlot")),
+        # Table tab
+        tabPanel("Interactive Table",
+                 h3("Top Songs"),
+                 DTOutput("popularityTable"))
+      )
+    )
   )
-  
-  # Top songs by year (interactive table)
-  
-  # Download as CSV
 )
-
-
 
 server <- function(input, output) {}
 
