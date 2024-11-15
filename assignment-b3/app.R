@@ -8,19 +8,19 @@ source("/Users/andrewfullerton/Desktop/Code/assignment-b3-andrewfullerton/data/p
 ui <- fluidPage(
   titlePanel("Christmas Tunes: Billboard Top 100", "Top Christmas Tunes"),
   
-  # Popularity by year interactive plot
+  # All-time popularity interactive plot
   sidebarLayout(
     sidebarPanel(
       h3("Plot Settings"),
       
-      # select songs and/or artists you want to view in plot
+      # select songs and/or artists you want to view in the plot
       selectInput("songInput", 
                   "Choose Song(s):",
                   choices = c("All Songs", xmas_billboard$song),
                   selected = "All Songs", # default: all songs
                   multiple = TRUE),
       
-      # select year range you want to view for
+      # select year range you want the popularity stats pulled from
       sliderInput("yearInput", 
                   "Select Year Range:", 
                   min = 1958, 
