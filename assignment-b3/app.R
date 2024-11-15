@@ -13,10 +13,10 @@ ui <- fluidPage(
     sidebarPanel(
       h3("Plot Settings"),
       
-      # select songs and/or artists you want to view in the plot
+      # select songs you want to view in the plot
       selectInput("songInput", 
                   "Choose Song(s):",
-                  choices = c("All Songs", xmas_billboard$song),
+                  choices = c("All Songs", xmas_all_time$song),
                   selected = "All Songs", # default: all songs
                   multiple = TRUE),
       
@@ -31,8 +31,8 @@ ui <- fluidPage(
       # select ranking criteria
       radioButtons("rankInput", 
                    "Rank by:",
-                   choices = c("Overall Popularity", "Weeks on Chart", "Peak Position"),
-                   selected = "Overall Popularity")
+                   choices = c("Average Billboard Ranking", "Weeks on Chart", "Peak Position"),
+                   selected = "Avereage Billboard Ranking")
       
       # download button (CSV)
     ),
