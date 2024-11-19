@@ -6,7 +6,7 @@ library(tidyverse)
 lightsaber_options <- list(
   Red = list(image = "lightsaber_red.png", hex = "#FF0000"),
   Blue = list(image = "lightsaber_blue.png", hex = "#0000FF"),
-  Green = list(image = "lightsaber_green.png", hex = "#00FF00")
+  Green = list(image = "lightsaber_green.png", hex = "#00CC00")
 )
 
 ui <- fluidPage(
@@ -57,7 +57,7 @@ server <- function(input, output) {
   output$lightsaber_grid <- renderUI({
     tagList(
       tags$div(
-        style = "display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px;",
+        style = "display: flex; justify-content: center; gap: 10px;", # Single row layout with spacing
         lapply(names(lightsaber_options), function(color) {
           tags$div(
             style = "text-align: center;",
@@ -66,11 +66,11 @@ server <- function(input, output) {
               label = tags$img(
                 src = lightsaber_options[[color]]$image,
                 height = "60px",
-                style = if (color == selected_color()) "border: 3px solid black;" else "border: 1px solid gray;"
+                style = "padding: 5px;" # Add padding for spacing, no border
               ),
-              style = "border: none; background: none; padding: 0;"
+              style = "border: none; background: none; padding: 0;" # No button border or background
             ),
-            tags$div(color)
+            tags$div(style = "font-size: small;", color) # Optional: Display color label below each image
           )
         })
       )
@@ -122,6 +122,11 @@ server <- function(input, output) {
           }
         ),
         hoverinfo = "text",
+        hoverlabel = list(
+          bgcolor = "rgba(255, 255, 255, 0.8)",  # Set the background color of the hovertext box (white with transparency)
+          font = list(color = "black"),  # Set the font color for hovertext
+          bordercolor = "black"  # Set the border color of the hovertext box
+        ),
         textposition = "none"
       ) %>%
       layout(
