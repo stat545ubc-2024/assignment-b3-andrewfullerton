@@ -10,7 +10,27 @@ lightsaber_options <- list(
 )
 
 ui <- fluidPage(
-  titlePanel("Star Wars Characters", "Star Wars Characters"),
+  # Add banner image at the top of the page
+  tags$div(
+    style = "text-align: center;",
+    tags$img(
+      src = "starwars_logo.png",    
+      height = "25%",  
+      width = "25%"    
+    )
+  ),
+  
+  tags$div(
+    style = "text-align: center; margin-top: 20px;",  # Add margin for spacing
+    titlePanel("Compare Star Wars Characters by Height and Weight")
+  ),
+  
+  wellPanel(
+    style = "background-color: #f0f0f0; border-radius: 8px;",  # Light gray background and rounded corners
+    h4("About this app"),
+    p("This Shiny app allows you to explore and compare Star Wars characters by height (cm) and mass (kg). Filter characters, choose the metric to compare, and explore in both graphical and tabular formats."),
+    p("Use the options on the left to select characters, adjust the comparison metric, and choose your colour.")
+  ),
   
   # Settings
   sidebarLayout(
@@ -19,7 +39,7 @@ ui <- fluidPage(
       
       # Select characters you want to view in the plot
       selectInput("characterInput", 
-                  "Choose Character(s):",
+                  "Choose character(s):",
                   choices = c("All Characters", starwars$name),
                   selected = "All Characters", # default: all characters
                   multiple = TRUE),
@@ -31,7 +51,7 @@ ui <- fluidPage(
                    selected = "Height"),
       
       # Lightsaber color selector
-      h4("Choose a Lightsaber Color:"),
+      h4("Choose a colour:"),
       uiOutput("lightsaber_grid")
     ),
     mainPanel(
