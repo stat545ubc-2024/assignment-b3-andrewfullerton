@@ -2,37 +2,27 @@ library(shiny)
 library(DT)
 library(tidyverse)
 
-source("/Users/andrewfullerton/Desktop/Code/assignment-b3-andrewfullerton/data/preprocessing.R")
-
 # Building the UI
 ui <- fluidPage(
-  titlePanel("Christmas Tunes: Billboard Top 100", "Top Christmas Tunes"),
+  titlePanel("Star Wars Characters", "Star Wars Characters"),
   
   # All-time popularity interactive plot
   sidebarLayout(
     sidebarPanel(
       h3("Plot Settings"),
       
-      # select songs you want to view in the plot
-      selectInput("songInput", 
-                  "Choose Song(s):",
-                  choices = c("All Songs", xmas_all_time$song),
-                  selected = "All Songs", # default: all songs
+      # select characters you want to view in the plot
+      selectInput("characterInput", 
+                  "Choose Character(s):",
+                  choices = c("All Characters", starwars$name),
+                  selected = "All Characters", # default: all characters
                   multiple = TRUE),
       
-      # select year range you want the popularity stats pulled from
-      sliderInput("yearInput", 
-                  "Select Year Range:", 
-                  min = 1958, 
-                  max = 2017, 
-                  c(1958, 2017), 
-                  sep = ""),
-      
-      # select ranking criteria
-      radioButtons("rankInput", 
-                   "Rank by:",
-                   choices = c("Average Billboard Ranking", "Weeks on Chart", "Peak Position"),
-                   selected = "Avereage Billboard Ranking")
+      # select metric you want to compare
+      radioButtons("metricInput", 
+                   "Compare by:",
+                   choices = c("Height", "Mass"),
+                   selected = "Height")
       
       # download button (CSV)
     ),
@@ -40,17 +30,63 @@ ui <- fluidPage(
       tabsetPanel(
         # Plot tab
         tabPanel("Interactive Plot",
-                 h3("Song Popularity Plot"),
-                 plotOutput("popularityPlot")),
+                 h3("Compare Star Wars Characters"),
+                 plotlyOutput("charactersPlot")),
         # Table tab
         tabPanel("Interactive Table",
-                 h3("Top Songs"),
-                 DTOutput("popularityTable"))
+                 h3("Compare Star Wars Characters"),
+                 DTOutput("charactersTable"))
       )
     )
   )
 )
 
-server <- function(input, output) {}
+server <- function(input, output) {
+  # Filter data based on inputs
+  filteredData <- reactive({
+    data <- starwars %>% 
+      filter(!is.na(height) & !is.na(mass)) # Ensure no NA values in key metrics
+    
+    # Filter by character selection
+    if (!("All Characters" %in% input$characterInput)) {
+      data <- data %>% filter(name %in% input$characterInput)
+    }
+    
+    data
+  })
+  
+  # Render the plot
+  output$charactersPlot <- renderPlotly({
+    metric <- if (input$metricInput == "Height") "height" else "mass"
+    metricLabel <- if (input$metricInput == "Height") "Height (cm)" else "Mass (kg)"
+    
+    filteredData() %>%
+      plot_ly(
+        x = ~name, 
+        y = as.formula(paste0("~", metric)), 
+        type = 'bar', 
+        name = metricLabel,
+        marker = list(color = if (metric == "height") 'blue' else 'green'),
+        text = ~paste(
+          "<b>", name, "</b>", "<br>",
+          "Sex:", sex, "<br>",
+          "Species:", species, "<br>",
+          "Homeworld:", homeworld, "<br>", 
+          if (metric == "height") {
+            paste("Height (cm):", height, "<br>Mass (kg):", mass)
+          } else {
+            paste("Mass (kg):", mass, "<br>Height (cm):", height)
+          }
+        ),
+        hoverinfo = "text"
+      ) %>%
+      layout(
+        title = paste("Comparison of", metricLabel),
+        xaxis = list(title = "Character", categoryorder = "total ascending"),
+        yaxis = list(title = metricLabel),
+        barmode = 'group'
+      )
+  })
+}
 
 shinyApp(ui = ui, server = server)
