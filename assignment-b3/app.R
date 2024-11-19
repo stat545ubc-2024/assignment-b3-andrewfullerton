@@ -78,7 +78,8 @@ server <- function(input, output) {
             paste("Mass (kg):", mass, "<br>Height (cm):", height)
           }
         ),
-        hoverinfo = "text"
+        hoverinfo = "text",
+        textposition = "none"
       ) %>%
       layout(
         title = paste("Comparison of", metricLabel),
@@ -86,6 +87,27 @@ server <- function(input, output) {
         yaxis = list(title = metricLabel),
         barmode = 'group'
       )
+  })
+  
+  # Render the table
+  output$charactersTable <- renderDT({
+    data <- filteredData()
+    
+    # Adjust table columns based on the selected metric
+    metric <- if (input$metricInput == "Height") "height" else "mass"
+    
+    # Determine the index of the metric column in the table (1-based index)
+    metric_index <- if (metric == "height") 2 else 3  # Assuming height is the 2nd column and mass is the 3rd
+    
+    # Create the table and apply sorting based on the selected metric
+    data %>%
+      select(name, height, mass, sex, species, homeworld, all_of(metric)) %>%
+      datatable(
+        options = list(
+          pageLength = 10,
+          order = list(list(metric_index, 'desc'))  # Automatically sort by the selected metric (descending)
+        )
+      )  # Customize table options as needed
   })
 }
 
