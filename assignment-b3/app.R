@@ -2,29 +2,26 @@ library(shiny)
 library(DT)
 library(tidyverse)
 
-# Building the UI
 ui <- fluidPage(
   titlePanel("Star Wars Characters", "Star Wars Characters"),
   
-  # All-time popularity interactive plot
+  # Settings
   sidebarLayout(
     sidebarPanel(
-      h3("Plot Settings"),
+      h3("Settings"),
       
-      # select characters you want to view in the plot
+      # Select characters you want to view in the plot
       selectInput("characterInput", 
                   "Choose Character(s):",
                   choices = c("All Characters", starwars$name),
                   selected = "All Characters", # default: all characters
                   multiple = TRUE),
       
-      # select metric you want to compare
+      # Select metric you want to compare
       radioButtons("metricInput", 
                    "Compare by:",
                    choices = c("Height", "Mass"),
                    selected = "Height")
-      
-      # download button (CSV)
     ),
     mainPanel(
       tabsetPanel(
@@ -35,7 +32,8 @@ ui <- fluidPage(
         # Table tab
         tabPanel("Interactive Table",
                  h3("Compare Star Wars Characters"),
-                 DTOutput("charactersTable"))
+                 DTOutput("charactersTable"),
+                 div(style = "text-align: center; margin-top: 20px;", downloadButton("downloadData", "Download CSV")))
       )
     )
   )
@@ -105,10 +103,30 @@ server <- function(input, output) {
       datatable(
         options = list(
           pageLength = 10,
-          order = list(list(metric_index, 'desc'))  # Automatically sort by the selected metric (descending)
+          order = list(list(metric_index, 'desc'))  # Automatically sort by metric (descending)
         )
-      )  # Customize table options as needed
+      ) 
   })
+  
+  # Download data
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste("starwars_data_", Sys.Date(), ".csv", sep = "")  # Create a file name based on the date
+    },
+    content = function(file) {
+      # Apply filtering directly in the content function
+      data <- starwars %>% 
+        filter(!is.na(height) & !is.na(mass)) # Ensure no NA values in key metrics
+      
+      # Filter by character selection
+      if (!("All Characters" %in% input$characterInput)) {
+        data <- data %>% filter(name %in% input$characterInput)
+      }
+      
+      # Write the filtered data to CSV
+      write.csv(data, file, row.names = FALSE)
+    }
+  )
 }
 
 shinyApp(ui = ui, server = server)
