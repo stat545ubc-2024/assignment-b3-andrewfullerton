@@ -3,7 +3,7 @@ library(plotly)
 library(DT)
 library(tidyverse)
 
-# Store lightsaber hex values for use in plotting
+# Store lightsaber hex values and images paths for use in plotting
 lightsaber_options <- list(
   Red = list(image = "lightsaber_red.png", hex = "#FF0000"),
   Blue = list(image = "lightsaber_blue.png", hex = "#0000FF"),
@@ -23,13 +23,13 @@ ui <- fluidPage(
   
   # Main title
   tags$div(
-    style = "text-align: center; margin-top: 20px;",  # Add margin for spacing
+    style = "text-align: center; margin-top: 20px;",
     titlePanel("Compare Star Wars Characters by Height and Mass", "Star Wars Characters by Size")
   ),
   
   # About this app bubble
   wellPanel(
-    style = "background-color: #f0f0f0; border-radius: 8px;",  # Light gray background and rounded corners
+    style = "background-color: #f0f0f0; border-radius: 8px;",
     h4("About this app"),
     p("This Shiny app allows you to explore and compare Star Wars characters by height (cm) and mass (kg). Filter characters, choose the metric to compare, and explore in both graphical and tabular formats."),
     p("Use the options on the left to select characters, adjust the comparison metric, and choose your colour.")
@@ -41,7 +41,7 @@ ui <- fluidPage(
       h3("Settings"),
       
       # Feature 1: Select characters you want to view in the plot.
-      # This feature enables the user to hand-pick the characters they want to compare
+      # This feature allows the user to hand-pick the characters they want to compare
       # in the plot/table; this feature is flexible in order to allow users to
       # investigate a variety of different comparisons without imposing any unnecessary constraints.
       # For ease of use, users can simply type in a characters name and select them from the
@@ -53,25 +53,26 @@ ui <- fluidPage(
                   multiple = TRUE),
       
       # Feature 2: Select metric you want to compare by.
-      # The starwars dataset includes height and mass measures; this feature allows
-      # the user to select the metric that they are most interested in. 
+      # This feature allows the user to select the metric that they are most 
+      # interested in comparing the characters by. 
       radioButtons("metricInput", 
                    "Compare by:",
                    choices = c("Height", "Mass"),
                    selected = "Height"), # Default: height
       
-      # Feature 3: Lightsaber/plot colour selector.
-      # Rather than providing a simple colour palette for users to select from,
-      # this feature uses lightsaber images as a colour selector as means of staying
-      # on-theme with the app and making the user experience more delightful. 
+      # Feature 3: Lightsaber/plot color selector.
+      # This feature uses a lightsaber color selector to let users customize
+      # the appearance of their plot; this is more on-theme with the app 
+      # and makes the user experience more fun/enjoyable than a traditional
+      # color selector.
       h4("Choose a colour:"),
       uiOutput("lightsaber_grid")
     ),
     
     # Feature 4: Tab layout.
     # This feature enables the user to explore height/mass comparisons in both
-    # a graphical and tabular format without having to deal with separate settings.
-    # The characters and metric selected by the user will be dynamically applied
+    # a graphical and tabular format without having to deal with separate settings;
+    # the characters and metric selected by the user will be dynamically applied
     # to both the plot and the table. 
     mainPanel(
       tabsetPanel(
@@ -86,6 +87,7 @@ ui <- fluidPage(
       )
     )
   ),
+  
   # Footer/in-app data source statement
   tags$footer(
     style = "bottom: 0; 
@@ -99,68 +101,71 @@ ui <- fluidPage(
   )
 )
 
-server <- function(input, output) {
-  # Reactive value for selected lightsaber color
-  selected_color <- reactiveVal("Red") # Default plot colour: red
+server <- function(input, output) { 
+  # Initialize reactive value for selected lightsaber color
+  selected_color <- reactiveVal("Red")  # Default colour: red
   
-  # Lightsaber/plot colour selector grid UI
+  # Reactive metric selection
+  selected_metric <- reactive({ 
+    if (input$metricInput == "Height") "height" else "mass" 
+  }) 
+  
+  # Reactive metric label
+  metric_label <- reactive({ 
+    if (input$metricInput == "Height") "Height (cm)" else "Mass (kg)" 
+  })
+  
+  # RENDER LIGHTSABER SELECTOR/plot color selector grid
   output$lightsaber_grid <- renderUI({
     tagList(
       tags$div(
-        style = "display: flex; justify-content: center; gap: 10px;", # Single row layout with spacing
-        lapply(names(lightsaber_options), function(color) {
+        style = "display: flex; justify-content: center; gap: 10px;", 
+        lapply(names(lightsaber_options), function(color) {  # Loop over the lightsaber options
           tags$div(
             style = "text-align: center;",
             actionButton(
-              inputId = paste0("select_", color),
+              inputId = paste0("select_", color),  # Unique color ID for each button
               label = tags$img(
-                src = lightsaber_options[[color]]$image,
-                height = "60px",
-                style = "padding: 5px;" # Add padding for spacing, no border
+                src = pluck(lightsaber_options, color, "image"),  # Get image path for the lightsaber
+                height = "60px",  # Set the image height
+                style = "padding: 5px;"  # Add padding around the image
               ),
-              style = "border: none; background: none; padding: 0;" # No button border or background
+              style = "border: none; background: none; padding: 0;"  # Remove border/background/padding
             ),
-            tags$div(style = "font-size: small;", color) # Display color label below each image
+            tags$div(style = "font-size: small;", color)  # Display the color name below each lightsaber image
           )
         })
       )
     )
   })
   
-  # Update selected lightsaber colour based on user input
+  # Update selected color based on user input from lightsaber grid
   observeEvent(input$select_Red, { selected_color("Red") })
   observeEvent(input$select_Blue, { selected_color("Blue") })
   observeEvent(input$select_Green, { selected_color("Green") })
   
-  # Filter data based on inputs
+  # Reactive expression to filter the data based on selected characters and ensure no NA values in key metrics
   filteredData <- reactive({
-    data <- starwars %>% 
-      filter(!is.na(height) & !is.na(mass)) # Ensure no NA values in key metrics
+    # Ensure no NA values in height and mass columns
+    data <- starwars %>%
+      filter(!is.na(height) & !is.na(mass))
     
-    # Filter by character selection
+    # Filter the data to only include only selected characters
     if (!("All Characters" %in% input$characterInput)) {
       data <- data %>% filter(name %in% input$characterInput)
     }
     
-    data
+    data  # Return the filtered data
   })
   
-  # Render the plot
+  # RENDER THE PLOT with the selected metric and color
   output$charactersPlot <- renderPlotly({
-    metric <- if (input$metricInput == "Height") "height" else "mass"
-    metricLabel <- if (input$metricInput == "Height") "Height (cm)" else "Mass (kg)"
-    
-    # Get the hex color for the selected lightsaber colour
-    color_hex <- lightsaber_options[[selected_color()]]$hex
-    
-    # Plot specifications
     filteredData() %>%
       plot_ly(
         x = ~name, 
-        y = as.formula(paste0("~", metric)), 
-        type = 'bar', 
-        name = metricLabel,
-        marker = list(color = color_hex),
+        y = as.formula(paste0("~", selected_metric())),  # Dynamically set the y-axis based on the selected metric
+        type = 'bar',
+        marker = list(color = pluck(lightsaber_options, selected_color(), "hex")),  # Set the color of the bars to the lightsaber's associated hex
         text = ~paste(
           "<b>", name, "</b>", "<br>",
           "Sex:", sex, "<br>",
@@ -168,42 +173,33 @@ server <- function(input, output) {
           "Homeworld:", homeworld, "<br>",
           "Height (cm):", height, "<br>",
           "Mass (kg):", mass, "<br>"
-          ),
-        hoverinfo = "text",
+        ), # Character details to be shown in hover text
+        hoverinfo = "text",  # Show text information when hovering over the bar
         hoverlabel = list(
-          bgcolor = "rgba(255, 255, 255, 0.8)",  # Set the background color of the hovertext box (white with transparency)
-          font = list(color = "black"),  # Set the font color for hovertext
-          bordercolor = "black"  # Set the border color of the hovertext box
+          bgcolor = "rgba(255, 255, 255, 0.8)",  # Set background color
+          bordercolor = "black" 
         ),
-        textposition = "none" # Remove labels from bars in plot
+        textposition = "none"  # No text labels directly on the bars (only hover)
       ) %>%
       layout(
-        title = paste("Comparison of", metricLabel),
-        xaxis = list(title = "Character", categoryorder = "total ascending"),
-        yaxis = list(title = metricLabel),
-        barmode = 'group'
+        title = paste("Comparison of", metric_label()),  # Set the plot title based on the selected metric
+        xaxis = list(title = "Character", categoryorder = "total ascending"),  # Sort characters by metric (ascending)
+        yaxis = list(title = metric_label())  # Set y-axis label based on the selected metric
       )
   })
   
-  # Render the table
+  # RENDER THE TABLE sorted by selected metric
   output$charactersTable <- renderDT({
-    data <- filteredData()
+    metric_index <- if (selected_metric() == "height") 2 else 3  # Assuming height is 2nd column and mass is 3rd
     
-    # Adjust table columns based on the selected metric
-    metric <- if (input$metricInput == "Height") "height" else "mass"
-    
-    # Determine the index of the metric column in the table (1-based index)
-    metric_index <- if (metric == "height") 2 else 3  # Assuming height is the 2nd column and mass is the 3rd
-    
-    # Create the table and apply sorting based on the selected metric
-    data %>%
-      select(name, height, mass, sex, species, homeworld, all_of(metric)) %>%
+    filteredData() %>%
+      select(name, height, mass, sex, species, homeworld) %>%  # Select/specify order of columns
       datatable(
         options = list(
           pageLength = 10,
-          order = list(list(metric_index, 'desc'))  # Automatically sort by metric (descending)
+          order = list(list(metric_index, 'desc'))  # Sort the table by the selected metric in descending order
         )
-      ) 
+      )
   })
 }
 
