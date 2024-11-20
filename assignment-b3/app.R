@@ -3,6 +3,7 @@ library(plotly)
 library(DT)
 library(tidyverse)
 
+# Store lightsaber hex values for use in plotting
 lightsaber_options <- list(
   Red = list(image = "lightsaber_red.png", hex = "#FF0000"),
   Blue = list(image = "lightsaber_blue.png", hex = "#0000FF"),
@@ -10,21 +11,23 @@ lightsaber_options <- list(
 )
 
 ui <- fluidPage(
-  # Add banner image at the top of the page
+  # Banner image at the top of the page
   tags$div(
     style = "text-align: center;",
     tags$img(
       src = "starwars_logo.png",    
-      height = "25%",  
-      width = "25%"    
+      height = "18%",  
+      width = "18%"    
     )
   ),
   
+  # Main title
   tags$div(
     style = "text-align: center; margin-top: 20px;",  # Add margin for spacing
-    titlePanel("Compare Star Wars Characters by Height and Weight")
+    titlePanel("Compare Star Wars Characters by Height and Mass", "Star Wars Characters by Size")
   ),
   
+  # About this app bubble
   wellPanel(
     style = "background-color: #f0f0f0; border-radius: 8px;",  # Light gray background and rounded corners
     h4("About this app"),
@@ -32,28 +35,44 @@ ui <- fluidPage(
     p("Use the options on the left to select characters, adjust the comparison metric, and choose your colour.")
   ),
   
-  # Settings
+  # Plot/table configuration settings
   sidebarLayout(
     sidebarPanel(
       h3("Settings"),
       
-      # Select characters you want to view in the plot
+      # Feature 1: Select characters you want to view in the plot.
+      # This feature enables the user to hand-pick the characters they want to compare
+      # in the plot/table; this feature is flexible in order to allow users to
+      # investigate a variety of different comparisons without imposing any unnecessary constraints.
+      # For ease of use, users can simply type in a characters name and select them from the
+      # drop down list. 
       selectInput("characterInput", 
                   "Choose character(s):",
                   choices = c("All Characters", starwars$name),
-                  selected = "All Characters", # default: all characters
+                  selected = "All Characters", # Default: all characters
                   multiple = TRUE),
       
-      # Select metric you want to compare
+      # Feature 2: Select metric you want to compare by.
+      # The starwars dataset includes height and mass measures; this feature allows
+      # the user to select the metric that they are most interested in. 
       radioButtons("metricInput", 
                    "Compare by:",
                    choices = c("Height", "Mass"),
-                   selected = "Height"),
+                   selected = "Height"), # Default: height
       
-      # Lightsaber color selector
+      # Feature 3: Lightsaber/plot colour selector.
+      # Rather than providing a simple colour palette for users to select from,
+      # this feature uses lightsaber images as a colour selector as means of staying
+      # on-theme with the app and making the user experience more delightful. 
       h4("Choose a colour:"),
       uiOutput("lightsaber_grid")
     ),
+    
+    # Feature 4: Tab layout.
+    # This feature enables the user to explore height/mass comparisons in both
+    # a graphical and tabular format without having to deal with separate settings.
+    # The characters and metric selected by the user will be dynamically applied
+    # to both the plot and the table. 
     mainPanel(
       tabsetPanel(
         # Plot tab
@@ -66,14 +85,25 @@ ui <- fluidPage(
                  DTOutput("charactersTable"))
       )
     )
+  ),
+  # Footer/in-app data source statement
+  tags$footer(
+    style = "bottom: 0; 
+             width: 100%; 
+             background-color: #f8f9fa; 
+             text-align: center; 
+             padding: 10px; 
+             border-top: 1px solid #ddd;
+             margin-top: 20px;",
+    HTML("The data used in this app is sourced from the R package 'dplyr'. It was originally sourced from the Star Wars API (SWAPI) and revised to include gender and sex determinations.")
   )
 )
 
 server <- function(input, output) {
   # Reactive value for selected lightsaber color
-  selected_color <- reactiveVal("Red")
+  selected_color <- reactiveVal("Red") # Default plot colour: red
   
-  # Lightsaber grid UI
+  # Lightsaber/plot colour selector grid UI
   output$lightsaber_grid <- renderUI({
     tagList(
       tags$div(
@@ -90,14 +120,14 @@ server <- function(input, output) {
               ),
               style = "border: none; background: none; padding: 0;" # No button border or background
             ),
-            tags$div(style = "font-size: small;", color) # Optional: Display color label below each image
+            tags$div(style = "font-size: small;", color) # Display color label below each image
           )
         })
       )
     )
   })
   
-  # Update selected lightsaber color
+  # Update selected lightsaber colour based on user input
   observeEvent(input$select_Red, { selected_color("Red") })
   observeEvent(input$select_Blue, { selected_color("Blue") })
   observeEvent(input$select_Green, { selected_color("Green") })
@@ -120,9 +150,10 @@ server <- function(input, output) {
     metric <- if (input$metricInput == "Height") "height" else "mass"
     metricLabel <- if (input$metricInput == "Height") "Height (cm)" else "Mass (kg)"
     
-    # Get the hex color for the selected lightsaber color
+    # Get the hex color for the selected lightsaber colour
     color_hex <- lightsaber_options[[selected_color()]]$hex
     
+    # Plot specifications
     filteredData() %>%
       plot_ly(
         x = ~name, 
@@ -134,20 +165,17 @@ server <- function(input, output) {
           "<b>", name, "</b>", "<br>",
           "Sex:", sex, "<br>",
           "Species:", species, "<br>",
-          "Homeworld:", homeworld, "<br>", 
-          if (metric == "height") {
-            paste("Height (cm):", height, "<br>Mass (kg):", mass)
-          } else {
-            paste("Mass (kg):", mass, "<br>Height (cm):", height)
-          }
-        ),
+          "Homeworld:", homeworld, "<br>",
+          "Height (cm):", height, "<br>",
+          "Mass (kg):", mass, "<br>"
+          ),
         hoverinfo = "text",
         hoverlabel = list(
           bgcolor = "rgba(255, 255, 255, 0.8)",  # Set the background color of the hovertext box (white with transparency)
           font = list(color = "black"),  # Set the font color for hovertext
           bordercolor = "black"  # Set the border color of the hovertext box
         ),
-        textposition = "none"
+        textposition = "none" # Remove labels from bars in plot
       ) %>%
       layout(
         title = paste("Comparison of", metricLabel),
