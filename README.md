@@ -1,5 +1,5 @@
 # Welcome to my assignment B3 submission
-In this repo, you'll find all the code, images, and files relevant to my Shiny app. You can see the app in action [HERE](https://github.com/stat545ubc-2024/assignment-b3-andrewfullerton).
+In this repo, you'll find all the code, images, and files relevant to my Shiny app. You can see the app in action [HERE](https://andrewfullerton.shinyapps.io/assignment-b3/).
 
 ### Here's what you need to know:
 * `assignment-b3/` is a folder containing the code, images, and files used to create and run the Shiny app.
