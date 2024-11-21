@@ -3,7 +3,7 @@ library(plotly)
 library(DT)
 library(tidyverse)
 
-# Store lightsaber hex values and images paths for use in plotting
+# Store lightsaber hex values and image paths for use in plotting
 lightsaber_options <- list(
   Red = list(image = "lightsaber_red.png", hex = "#FF0000"),
   Blue = list(image = "lightsaber_blue.png", hex = "#0000FF"),
@@ -24,7 +24,7 @@ ui <- fluidPage(
   # Main title
   tags$div(
     style = "text-align: center; margin-top: 20px;",
-    titlePanel("Compare Star Wars Characters by Height and Mass", "Star Wars Characters by Size")
+    titlePanel("Compare Star Wars Characters by Height and Mass", "Compare Star Wars Characters")
   ),
   
   # About this app bubble
@@ -40,11 +40,11 @@ ui <- fluidPage(
     sidebarPanel(
       h3("Settings"),
       
-      # Feature 1: Select characters you want to view in the plot.
+      # Feature 1: Select characters you want to view in the plot (select input).
       # This feature allows the user to hand-pick the characters they want to compare
       # in the plot/table; this feature is flexible in order to allow users to
       # investigate a variety of different comparisons without imposing any unnecessary constraints.
-      # For ease of use, users can simply type in a characters name and select them from the
+      # For ease of use, users can simply type in a character's name and select them from the
       # drop down list. 
       selectInput("characterInput", 
                   "Choose character(s):",
@@ -52,7 +52,7 @@ ui <- fluidPage(
                   selected = "All Characters", # Default: all characters
                   multiple = TRUE),
       
-      # Feature 2: Select metric you want to compare by.
+      # Feature 2: Select metric you want to compare by (radio buttons).
       # This feature allows the user to select the metric that they are most 
       # interested in comparing the characters by. 
       radioButtons("metricInput", 
@@ -60,7 +60,7 @@ ui <- fluidPage(
                    choices = c("Height", "Mass"),
                    selected = "Height"), # Default: height
       
-      # Feature 3: Lightsaber/plot color selector.
+      # Feature 3: Lightsaber/plot color selector (custom color selector).
       # This feature uses a lightsaber color selector to let users customize
       # the appearance of their plot; this is more on-theme with the app 
       # and makes the user experience more fun/enjoyable than a traditional
@@ -69,11 +69,7 @@ ui <- fluidPage(
       uiOutput("lightsaber_grid")
     ),
     
-    # Feature 4: Tab layout.
-    # This feature enables the user to explore height/mass comparisons in both
-    # a graphical and tabular format without having to deal with separate settings;
-    # the characters and metric selected by the user will be dynamically applied
-    # to both the plot and the table. 
+    # Tab layout
     mainPanel(
       tabsetPanel(
         # Plot tab
