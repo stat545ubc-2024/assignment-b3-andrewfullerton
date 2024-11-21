@@ -13,6 +13,4 @@ Once you have the project opened up in **RStudio**, go into the `assignment-b3/`
 ### About the app
 This Shiny app uses the `starwars` dataset from the `dplyr` package and allows you to explore and compare Star Wars characters by height (cm) and mass (kg). Filter characters, choose the metric to compare, and explore in both graphical and tabular formats.
 
-![image](https://github.com/user-attachments/assets/88e86092-e052-4891-8881-ecc1a6434b2f)
-
 *The data used in this app is sourced from the R package dplyr. It was originally sourced from the [Star Wars API (SWAPI)](https://swapi.py4e.com/) and revised to include gender and sex determinations. More information on the dataset can be found [here](https://dplyr.tidyverse.org/reference/starwars.html)*
