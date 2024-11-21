@@ -1,10 +1,10 @@
 # Welcome to my assignment B3 submission
 This Shiny app uses the `starwars` dataset from the `dplyr` package and allows you to explore and compare Star Wars characters by height (cm) and mass (kg). Filter characters, choose the metric to compare, and explore in both graphical and tabular formats.
 
-In this repo, you'll find all the code, images, and files relevant to my Shiny app. You can see the app in action [HERE](https://andrewfullerton.shinyapps.io/assignment-b3/).
+In this repo, you'll find all the code, images, and files relevant to my Shiny app. Please note that the one-sentence feature descriptions are included as comments in the `app.R` code. You can see the app in action [HERE](https://andrewfullerton.shinyapps.io/assignment-b3/).
 
 ### Here's what you need to know:
-* `assignment-b3/` is a folder containing the code, images, and files used to create and run the Shiny app.
+* `assignment-b3/` is a folder containing the code (`app.R`), images (in `www/`), and files used to create and run the Shiny app.
 * `assignment-b3-andrewfullerton.Rproj` contains the project-specific settings you'll need to run everything (smoothly) on your local machine.
 * `.gitignore` is there to prevent me from pushing any unneccessary or confidential files to GitHub.
 
